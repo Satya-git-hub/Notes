@@ -41,7 +41,8 @@ While calculating the Z-score we re-scale and center the data and look for data 
 We will use Z-score function defined in scipy library to detect the outliers.
 
 		from scipy import stats
-		import numpy as npz = np.abs(stats.zscore(boston_df))
+		import numpy as np
+		z = np.abs(stats.zscore(boston_df))
 		print(z)
 
 Defining a threshold to identify an outlier.
@@ -71,7 +72,7 @@ IQR score -
 		Q3 = boston_df_o1.quantile(0.75)
 		IQR = Q3 - Q1
 		print(IQR)
-		print(boston_df_o1 < (Q1 - 1.5 * IQR)) |(boston_df_o1 > (Q3 + 1.5 * IQR))
+		print((data < (Q1 - 1.5*IQR)) | (data > (Q3 + 1.5*IQR)))       
 
 Working with Outliers: Correcting, Removing
 ````````````````````````````````````````````
