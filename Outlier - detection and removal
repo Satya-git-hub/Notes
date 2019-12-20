@@ -1,0 +1,97 @@
+Ways to Detect and Remove the Outliers
+######################################
+
+Finding Outliers
+````````````````
+		boston = load_boston()
+		x = boston.data
+		y = boston.target
+		columns = boston.feature_names#create the dataframe
+		boston_df = pd.DataFrame(boston.data)
+		boston_df.columns = columns
+		boston_df.head()
+
+Discover outliers with visualization tools
+```````````````````````````````````````````
+Box plot-
+		import seaborn as sns
+		sns.boxplot(x=boston_df['DIS'])
+
+Here we analysed Uni-variate outlier i.e. we used DIS column only to check the outlier. But we can do multivariate outlier analysis too. Can we do the multivariate analysis with Box plot? Well it depends, if you have a categorical values then you can use that with any continuous variable and do multivariate outlier analysis. As we do not have categorical value in our Boston Housing dataset, we might need to forget about using box plot for multivariate outlier analysis.
+
+Scatter plot-
+		fig, ax = plt.subplots(figsize=(16,8))
+		ax.scatter(boston_df['INDUS'], boston_df['TAX'])
+		ax.set_xlabel('Proportion of non-retail business acres per town')
+		ax.set_ylabel('Full-value property-tax rate per $10,000')
+		plt.show()
+
+Discover outliers with mathematical function
+```````````````````````````````````````````
+Z-Score-
+
+	Definition
+
+    The Z-score is the signed number of standard deviations by which the value of an observation or data point is above the mean value of what is being observed or measured.
+
+The intuition behind Z-score is to describe any data point by finding their relationship with the Standard Deviation and Mean of the group of data points. Z-score is finding the distribution of data where mean is 0 and standard deviation is 1 i.e. normal distribution.
+
+While calculating the Z-score we re-scale and center the data and look for data points which are too far from zero. These data points which are way too far from zero will be treated as the outliers. In most of the cases a threshold of 3 or -3 is used i.e if the Z-score value is greater than or less than 3 or -3 respectively, that data point will be identified as outliers.
+
+We will use Z-score function defined in scipy library to detect the outliers.
+
+		from scipy import stats
+		import numpy as npz = np.abs(stats.zscore(boston_df))
+		print(z)
+
+Defining a threshold to identify an outlier.
+
+		threshold = 3
+		print(np.where(z > 3))
+
+The first array contains the list of row numbers and second array respective column numbers, which mean z[55][1] have a Z-score higher than 3.
+
+		print(z[55][1])3.375038763517309
+
+So, the data point — 55th record on column ZN is an outlier.
+
+
+IQR score -
+
+	Definition
+
+    The interquartile range (IQR), also called the midspread or middle 50%, or technically H-spread, is a measure of statistical dispersion, being equal to the difference between 75th and 25th percentiles, or between upper and lower quartiles, IQR = Q3 − Q1.
+
+    In other words, the IQR is the first quartile subtracted from the third quartile; these quartiles can be clearly seen on a box plot on the data.
+
+    It is a measure of the dispersion similar to standard deviation or variance, but is much more robust against outliers.
+
+
+		Q1 = boston_df_o1.quantile(0.25)
+		Q3 = boston_df_o1.quantile(0.75)
+		IQR = Q3 - Q1
+		print(IQR)
+		print(boston_df_o1 < (Q1 - 1.5 * IQR)) |(boston_df_o1 > (Q3 + 1.5 * IQR))
+
+Working with Outliers: Correcting, Removing
+````````````````````````````````````````````
+
+Z-Score
+
+		boston_df_o = boston_df_o[(z < 3).all(axis=1)]
+
+Above code removed around 90+ rows from the dataset i.e. outliers have been removed.
+
+IQR Score -
+
+		boston_df_out = boston_df_o1[~((boston_df_o1 < (Q1 - 1.5 * IQR)) |(boston_df_o1 > (Q3 + 1.5 * IQR))).any(axis=1)]boston_df_out.shape
+
+The above code will remove the outliers from the dataset.
+
+Whether an outlier should be removed or not. Every data analyst/data scientist might get these thoughts once in every problem they are working on. Some good explanations -
+
+    https://www.researchgate.net/post/When_is_it_justifiable_to_exclude_outlier_data_points_from_statistical_analyses
+
+    https://www.researchgate.net/post/Which_is_the_best_method_for_removing_outliers_in_a_data_set
+
+    https://www.theanalysisfactor.com/outliers-to-drop-or-not-to-drop/
